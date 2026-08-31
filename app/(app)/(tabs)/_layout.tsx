@@ -4,7 +4,7 @@ import { Platform, Text } from 'react-native';
 import { colors, fonts } from '@/theme';
 
 function TabIcon({ glyph, color }: { glyph: string; color: string }) {
-  return <Text style={{ color, fontSize: 15, fontWeight: '700' }}>{glyph}</Text>;
+  return <Text style={{ color, fontSize: 13, fontWeight: '700' }}>{glyph}</Text>;
 }
 
 export default function TabLayout() {
@@ -17,12 +17,12 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: colors.tabBar,
           borderTopColor: colors.edge,
-          height: Platform.OS === 'web' ? 64 : undefined,
+          height: Platform.OS === 'web' ? 68 : undefined,
         },
         tabBarLabelStyle: {
           fontFamily: fonts.heading,
-          fontSize: 10,
-          letterSpacing: 1.2,
+          fontSize: 9,
+          letterSpacing: 0.8,
         },
         sceneStyle: { backgroundColor: colors.bg },
       }}>
@@ -41,24 +41,24 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="wallet"
+        name="market"
         options={{
-          title: 'Wallet',
-          tabBarIcon: ({ color }) => <TabIcon glyph="XP" color={String(color)} />,
+          title: 'Market',
+          tabBarIcon: ({ color }) => <TabIcon glyph="M" color={String(color)} />,
         }}
       />
       <Tabs.Screen
-        name="events"
+        name="fun-den"
         options={{
-          title: 'Events',
-          tabBarIcon: ({ color }) => <TabIcon glyph="E" color={String(color)} />,
+          title: 'Fun Den',
+          tabBarIcon: ({ color }) => <TabIcon glyph="FD" color={String(color)} />,
         }}
       />
       <Tabs.Screen
-        name="account"
+        name="fun-scout"
         options={{
-          title: 'Account',
-          tabBarIcon: ({ color }) => <TabIcon glyph="A" color={String(color)} />,
+          title: 'Fun Scout',
+          tabBarIcon: ({ color }) => <TabIcon glyph="FS" color={String(color)} />,
         }}
       />
     </Tabs>

@@ -15,6 +15,8 @@ export const hrefs = {
   profile: '/(app)/profile' as Href,
   settings: '/(app)/settings' as Href,
   racing: '/(app)/(tabs)/racing' as Href,
-  events: '/(app)/(tabs)/events' as Href,
-  funDen: '/(app)/fun-den' as Href,
+  market: '/(app)/(tabs)/market' as Href,
+  funDen: '/(app)/(tabs)/fun-den' as Href,
+  funScout: '/(app)/(tabs)/fun-scout' as Href,
+  events: '/(app)/events' as Href,
 };

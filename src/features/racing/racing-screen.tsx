@@ -1,24 +1,35 @@
-import { View } from 'react-native';
+import { useState } from 'react';
+import { Image, Pressable, View } from 'react-native';
 import { router } from 'expo-router';
 
 import { Button, Card, EmptyState, ErrorState, LoadingState, Screen, AppText } from '@/components/ui';
-import { isPreviewData } from '@/data/source';
-import type { RacingPathStep } from '@/data/types';
+import { PUSH_PATHS } from '@/data/push/catalog';
+import type { PushPath } from '@/data/push/types';
+import type { RacingPathHref, RacingPathStep } from '@/data/types';
 import { useRacingPage } from '@/features/racing/use-racing-page';
 import { hrefs } from '@/navigation/hrefs';
-import { colors, fonts, space, type } from '@/theme';
+import { colors, fonts, radius, space, type } from '@/theme';
 
-function hrefFor(step: RacingPathStep) {
-  if (step.href === 'events') return hrefs.events;
-  if (step.href === 'academy') return hrefs.academy;
+function hrefFor(kind: RacingPathHref) {
+  if (kind === 'events') return hrefs.events;
+  if (kind === 'academy') return hrefs.academy;
+  if (kind === 'funDen') return hrefs.funDen;
   return hrefs.booking;
 }
 
+function actionLabel(kind: RacingPathHref) {
+  if (kind === 'events') return 'Open events';
+  if (kind === 'academy') return 'Open academy';
+  if (kind === 'funDen') return 'Open Fun Den';
+  return 'Book this step';
+}
+
 export function RacingScreen() {
-  const { data, state, reload } = useRacingPage();
+  const [path, setPath] = useState<PushPath>('yalla-drift');
+  const { data, state, reload } = useRacingPage(path);
 
   if (state.kind === 'loading' && !data) {
-    return <LoadingState label="LOADING PATH…" />;
+    return <LoadingState label="SYNCING PATH…" />;
   }
 
   return (
@@ -32,35 +43,48 @@ export function RacingScreen() {
       </AppText>
       <AppText tone="muted">{data?.subtitle}</AppText>
 
-      {isPreviewData() ? (
-        <AppText tone="gold" style={type.caption}>
-          From akacademy.online/push · standings and slots are not live
+      <AppText tone="gold" style={type.caption}>
+        Synced from akacademy.online/push only
+      </AppText>
+      {data?.syncWarning ? (
+        <AppText tone="muted" style={type.caption}>
+          {data.syncWarning}
         </AppText>
       ) : null}
+
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: space.sm }}>
+        {PUSH_PATHS.map((item) => {
+          const active = path === item.id;
+          return (
+            <Pressable
+              key={item.id}
+              onPress={() => setPath(item.id)}
+              style={{
+                borderRadius: radius.pill,
+                borderWidth: 1,
+                borderColor: active ? colors.gold : colors.edge,
+                backgroundColor: active ? colors.carbon : colors.bgElevated,
+                paddingHorizontal: space.md,
+                paddingVertical: 8,
+              }}>
+              <AppText
+                style={{
+                  fontFamily: fonts.headingSemi,
+                  fontSize: 12,
+                  letterSpacing: 1.2,
+                  color: active ? colors.gold : colors.steel,
+                }}>
+                {item.label.toUpperCase()}
+              </AppText>
+            </Pressable>
+          );
+        })}
+      </View>
 
       {state.kind === 'error' ? <ErrorState message={state.message} onRetry={reload} /> : null}
 
       {data ? (
         <>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: space.sm }}>
-            {data.tags.map((tag) => (
-              <View
-                key={tag}
-                style={{
-                  borderRadius: 999,
-                  borderWidth: 1,
-                  borderColor: colors.edge,
-                  backgroundColor: colors.carbon,
-                  paddingHorizontal: space.md,
-                  paddingVertical: 6,
-                }}>
-                <AppText style={{ fontFamily: fonts.headingSemi, fontSize: 12, letterSpacing: 1.2, color: colors.steel }}>
-                  {tag.toUpperCase()}
-                </AppText>
-              </View>
-            ))}
-          </View>
-
           <View style={{ flexDirection: 'row', gap: space.sm }}>
             <View style={{ flex: 1 }}>
               <Button label="Get Started" onPress={() => router.push(hrefs.booking)} />
@@ -74,26 +98,7 @@ export function RacingScreen() {
             CHAMP DRIFTER PATH
           </AppText>
           {data.pathSteps.map((step) => (
-            <Card key={step.id} accent={step.order === 1}>
-              <View style={{ flexDirection: 'row', gap: space.md, alignItems: 'flex-start' }}>
-                <AppText style={{ fontFamily: fonts.mono, color: colors.gold, fontSize: 18 }}>
-                  {String(step.order).padStart(2, '0')}
-                </AppText>
-                <View style={{ flex: 1 }}>
-                  <AppText style={{ ...type.title, color: colors.text }}>{step.title}</AppText>
-                  <AppText tone="muted" style={{ marginTop: 4 }}>
-                    {step.summary}
-                  </AppText>
-                  <View style={{ marginTop: space.md }}>
-                    <Button
-                      label={step.href === 'booking' ? 'Book this step' : 'Open'}
-                      variant="ghost"
-                      onPress={() => router.push(hrefFor(step))}
-                    />
-                  </View>
-                </View>
-              </View>
-            </Card>
+            <PathCard key={step.id} step={step} />
           ))}
 
           <AppText tone="muted" style={type.section}>
@@ -106,9 +111,23 @@ export function RacingScreen() {
               </AppText>
               {board.entries.length ? (
                 board.entries.map((entry) => (
-                  <AppText key={entry.id} style={{ marginTop: space.sm }}>
-                    {entry.rank}. {entry.name}
-                  </AppText>
+                  <View
+                    key={entry.id}
+                    style={{
+                      marginTop: space.sm,
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      gap: space.md,
+                    }}>
+                    <AppText style={{ flex: 1 }}>
+                      {entry.rank}. {entry.name}
+                    </AppText>
+                    {entry.scoreLabel ? (
+                      <AppText tone="gold" style={{ fontFamily: fonts.mono, fontSize: 12 }}>
+                        {entry.scoreLabel}
+                      </AppText>
+                    ) : null}
+                  </View>
                 ))
               ) : (
                 <EmptyState title={board.emptyLabel} body="Names appear when the server publishes standings." />
@@ -159,5 +178,43 @@ export function RacingScreen() {
         </>
       ) : null}
     </Screen>
+  );
+}
+
+function PathCard({ step }: { step: RacingPathStep }) {
+  return (
+    <Card accent={step.order === 1}>
+      {step.imageUrl ? (
+        <Image
+          source={{ uri: step.imageUrl }}
+          style={{ height: 120, borderRadius: radius.md, marginBottom: space.md, backgroundColor: colors.carbon }}
+          resizeMode="cover"
+        />
+      ) : null}
+      <View style={{ flexDirection: 'row', gap: space.md, alignItems: 'flex-start' }}>
+        <AppText style={{ fontFamily: fonts.mono, color: colors.gold, fontSize: 18 }}>
+          {String(step.order).padStart(2, '0')}
+        </AppText>
+        <View style={{ flex: 1 }}>
+          <AppText style={{ ...type.title, color: colors.text }}>{step.title}</AppText>
+          {step.summary ? (
+            <AppText tone="muted" style={{ marginTop: 4 }}>
+              {step.summary}
+            </AppText>
+          ) : null}
+          {step.href ? (
+            <View style={{ marginTop: space.md }}>
+              <Button
+                label={actionLabel(step.href)}
+                variant="ghost"
+                onPress={() => {
+                  if (step.href) router.push(hrefFor(step.href));
+                }}
+              />
+            </View>
+          ) : null}
+        </View>
+      </View>
+    </Card>
   );
 }

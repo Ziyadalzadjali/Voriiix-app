@@ -1,3 +1,5 @@
+import type { PushPath } from './push/types';
+
 export type Role =
   | 'customer'
   | 'staff'
@@ -81,12 +83,16 @@ export type HomeDashboard = {
   achievements: HomeAchievement[];
 };
 
+export type RacingPathHref = 'booking' | 'events' | 'academy' | 'funDen';
+
 export type RacingPathStep = {
   id: string;
   order: number;
   title: string;
   summary: string;
-  href: 'booking' | 'events' | 'academy';
+  imageUrl?: string;
+  href: RacingPathHref | null;
+  source: 'live' | 'fallback';
 };
 
 export type RacingPillar = {
@@ -105,7 +111,7 @@ export type RacingLeaderboard = {
   id: string;
   title: string;
   emptyLabel: string;
-  entries: { id: string; name: string; rank: number }[];
+  entries: { id: string; name: string; rank: number; scoreLabel?: string }[];
 };
 
 export type RacingPage = {
@@ -114,6 +120,9 @@ export type RacingPage = {
   titleAccent: string;
   subtitle: string;
   tags: string[];
+  selectedPath: PushPath;
+  stepsSource: 'live' | 'fallback';
+  syncWarning?: string;
   pathSteps: RacingPathStep[];
   pillarsKicker: string;
   pillarsTitle: string;

@@ -32,7 +32,10 @@ export function HomeScreen() {
     <Screen>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <BrandMark compact />
-        <Button label="Alerts" variant="ghost" onPress={() => router.push(hrefs.notifications)} />
+        <View style={{ flexDirection: 'row', gap: space.sm }}>
+          <Button label="Alerts" variant="ghost" onPress={() => router.push(hrefs.notifications)} />
+          <Button label="Profile" variant="ghost" onPress={() => router.push(hrefs.profile)} />
+        </View>
       </View>
 
       <AppText tone="muted" style={type.section}>

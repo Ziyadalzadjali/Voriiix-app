@@ -1,3 +1,4 @@
+import type { PushPath } from '@/data/push/types';
 import type { AuthSession, HomeDashboard, RacingPage } from '@/data/types';
 
 export type EmailLoginInput = {
@@ -41,7 +42,7 @@ export interface HomeAdapter {
 }
 
 export interface RacingAdapter {
-  getPage(): Promise<RacingPage>;
+  getPage(path?: PushPath): Promise<RacingPage>;
 }
 
 export type AppClient = {
